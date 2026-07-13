@@ -5,30 +5,14 @@ Convert text to URL-friendly slugs. Pure Python, zero deps.
 
 import re, unicodedata
 
-from fastapi import FastAPI, Depends, Query
+from fastapi import Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-import time as _t, threading as _th
-_rl_win, _rl_max, _rl_hits, _rl_lk = 60, 60, {}, _th.Lock()
-
-async def _rate_limit(request):
-    from fastapi import Request, HTTPException
-    ip = (request.headers.get('X-Forwarded-For','') or request.headers.get('X-Real-IP','') or (request.client.host if request.client else '127.0.0.1')).split(',')[0].strip()
-    now = _t.time()
-    with _rl_lk:
-        e = _rl_hits.get(ip)
-        if e:
-            if now - e['s'] > _rl_win: e['s'], e['c'] = now, 1
-            else:
-                e['c'] += 1
-                if e['c'] > _rl_max: raise HTTPException(429, 'Too many requests')
-        else: _rl_hits[ip] = {'s': now, 'c': 1}
-    return True
+from ratelimit import RateLimitMiddleware
 
 app = FastAPI(title="Text to Slug API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-
+app.add_middleware(RateLimitMiddleware)
 
 
 
@@ -36,7 +20,6 @@ class SlugResult(BaseModel):
     original: str
     slug: str
     length: int
-
 
 def text_to_slug(text: str, separator: str = "-") -> str:
     text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
@@ -46,11 +29,9 @@ def text_to_slug(text: str, separator: str = "-") -> str:
 
 
 
-
 @app.get("/")
 async def root():
     return {"service": "Text to Slug API", "version": "1.0.0"}
-
 
 @app.get("/slugify", response_model=SlugResult)
 async def slugify(
