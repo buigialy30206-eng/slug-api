@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 app = FastAPI(title="Text to Slug API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
     return {"status": "ok"}
 
@@ -30,7 +30,7 @@ def text_to_slug(text: str, separator: str = "-") -> str:
     return text
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
     return {"status": "ok"}
 
