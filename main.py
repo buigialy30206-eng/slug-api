@@ -5,7 +5,7 @@ Convert text to URL-friendly slugs. Pure Python, zero deps.
 
 import re, unicodedata
 
-from fastapi import Query
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
