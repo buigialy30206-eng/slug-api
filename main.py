@@ -8,13 +8,9 @@ import re, unicodedata
 from fastapi import Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from ratelimit import RateLimitMiddleware
 
 app = FastAPI(title="Text to Slug API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-app.add_middleware(RateLimitMiddleware)
-
-
 
 class SlugResult(BaseModel):
     original: str
@@ -26,8 +22,6 @@ def text_to_slug(text: str, separator: str = "-") -> str:
     text = re.sub(r"[^\w\s-]", "", text).strip().lower()
     text = re.sub(r"[-\s]+", separator, text)
     return text
-
-
 
 @app.get("/")
 async def root():
