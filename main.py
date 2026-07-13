@@ -9,8 +9,6 @@ from fastapi import FastAPI, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-app = FastAPI(title="Text to Slug API", version="1.0.0", dependencies=[Depends(_rate_limit)])
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 import time as _t, threading as _th
 _rl_win, _rl_max, _rl_hits, _rl_lk = 60, 60, {}, _th.Lock()
 
@@ -28,9 +26,9 @@ async def _rate_limit(request):
         else: _rl_hits[ip] = {'s': now, 'c': 1}
     return True
 
-@app.api_route("/health", methods=["GET", "HEAD"])
-async def health():
-    return {"status": "ok"}
+app = FastAPI(title="Text to Slug API", version="1.0.0", dependencies=[Depends(_rate_limit)])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
 
 
 
@@ -47,9 +45,6 @@ def text_to_slug(text: str, separator: str = "-") -> str:
     return text
 
 
-@app.api_route("/health", methods=["GET", "HEAD"])
-async def health():
-    return {"status": "ok"}
 
 
 @app.get("/")
